@@ -12,7 +12,7 @@ from ..resources import CommentSchema
 @atomic
 async def create_comment_view(request: web.Request) -> web.Response:
     """View для создания комментария к посту."""
-    schema = CommentSchema()
+    schema = CommentSchema(strict=True)
     comment_data = await load_data(request, schema)
     async with request.app['db'].acquire() as conn:
         # Проверяем, что пост, к которому оставляется коммент существует
@@ -43,7 +43,7 @@ async def create_comment_view(request: web.Request) -> web.Response:
 
 @atomic
 async def update_comment_view(request: web.Request) -> web.Response:
-    schema = CommentSchema()
+    schema = CommentSchema(strict=True)
     comment_id = request.match_info['id']
     comment_data = await load_data(request, schema)
     async with request.app['db'].acquire() as conn:

@@ -5,7 +5,7 @@ from aiojobs.aiohttp import atomic
 
 from ....db.queries import (
     create_post, delete_post, find_posts, get_post, get_post_comments,
-    is_post_exist, is_section_exist
+    is_post_exist, is_section_exist, update_post
 )
 from ...utils import load_data
 from ..resources import PostSchema, PostsPageSchema
@@ -37,7 +37,30 @@ async def create_post_view(request):
 
 @atomic
 async def update_post_view(request):
-    pass
+    schema = PostSchema(strict=True)
+    post_id = request.match_info['id']
+    post_data = await load_data(request, schema)
+    async with request.app['db'].acquire() as conn:
+        if not await is_section_exist(conn, post_id):
+            logger.error(
+                'Cannot update post with id {}. Post does not exist'.format(
+                    post_id
+                )
+            )
+            raise web.HTTPNotFound
+        updated_post = await update_post(
+            conn, post_id, topic=post_data['topic'],
+            description=post_data['description']
+        )
+        post_comments = await get_post_comments(conn, post_id)
+        response_data = schema.load({
+            'id': updated_post.id,
+            'section_id': updated_post.section_id,
+            'topic': updated_post.topic,
+            'description': updated_post.description,
+            'comments': post_comments
+        }).data
+        return web.json_response(response_data)
 
 
 async def retrieve_post_view(request):
