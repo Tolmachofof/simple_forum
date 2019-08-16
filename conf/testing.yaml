@@ -1,0 +1,7 @@
+
+database:
+  host: 127.0.0.1
+  port: 5432
+  database: simple_forum
+  user: forum_admin
+  password: forum_admin
