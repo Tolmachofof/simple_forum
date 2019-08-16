@@ -82,7 +82,7 @@ async def retrieve_post_view(request):
 
 
 async def retrieve_posts_view(request):
-    schema = PostsPageSchema()
+    schema = PostsPageSchema(exclude=('children', ))
     query_params = {
         param: request.query_params[param] for param in (
             'topic__like', 'page_num', 'per_page'
