@@ -7,7 +7,7 @@ server:
 
 database:
   host: 127.0.0.1
-  port: 5432
+  port: 5435
   database: simple_forum
   user: forum_admin
   password: forum_admin
