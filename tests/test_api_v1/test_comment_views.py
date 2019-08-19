@@ -121,10 +121,6 @@ async def test_create_child_comment_if_parent_does_not_exist(cli):
     assert response.status == 400
 
 
-async def test_update_comment(cli):
-    pass
-
-
 async def test_update_comment_if_comment_does_not_exist(cli):
     request_data = {'post_id': random.randint(1, 100), 'text': 'new_text'}
     response = await cli.put(
