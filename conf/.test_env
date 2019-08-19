@@ -1,0 +1,4 @@
+DATABASE_HOST=test-forum-db
+DATABASE_NAME=simple_forum
+DATABASE_USER=simple_forum
+DATABASE_PASSWORD=simple_forum

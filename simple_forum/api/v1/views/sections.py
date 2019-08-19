@@ -60,11 +60,10 @@ async def retrieve_section_view(request):
 
 async def retrieve_sections_view(request):
     schema = SectionsPageSchema()
-    query_params = {
-        param: request.query_params[param] for param in (
-            'name__like', 'page_num', 'per_page'
-        )
-    }
+    query_params = {}
+    for param in ('name__like', 'page_num', 'per_page'):
+        if param in request.query:
+            query_params[param] = request.query[param]
     async with request.app['db'].acquire() as conn:
         sections_page = await find_sections(conn, **query_params)
     response_data = schema.dump(sections_page).data

@@ -3,6 +3,11 @@ from marshmallow.validate import Length
 
 
 class Page(Schema):
+    """Базовый класс-схема для представления страницы пагинации.
+    
+    :param page_num: Номер текущей страницы.
+    :param per_page: Количество элементов на странице.
+    :param total: Общее количество элементов."""
     
     page_num = fields.Integer(required=True, allow_none=False)
     per_page = fields.Integer(required=True, allow_none=False)
@@ -47,6 +52,7 @@ class CommentSchema(Schema):
 
 
 class PostSchema(Schema):
+    
     id = fields.Integer(dump_only=True, required=True, allow_none=False)
     section_id = fields.Integer(required=True, allow_none=False)
     topic = fields.String(required=True, allow_none=False)
@@ -56,7 +62,8 @@ class PostSchema(Schema):
     )
 
 
-class PostsPageSchema(Schema):
+class PostsPageSchema(Page):
+    
     items = fields.Nested(
         PostSchema, many=True, required=True, allow_none=False
     )

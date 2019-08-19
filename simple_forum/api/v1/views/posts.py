@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 @atomic
 async def create_post_view(request):
-    schema = PostSchema()
+    
+    schema = PostSchema(strict=True)
     post_data = await load_data(request, schema)
     async with request.app['db'].acquire() as conn:
         if not await is_section_exist(conn, post_data['section_id']):
@@ -41,7 +42,7 @@ async def update_post_view(request):
     post_id = request.match_info['id']
     post_data = await load_data(request, schema)
     async with request.app['db'].acquire() as conn:
-        if not await is_section_exist(conn, post_id):
+        if not await is_post_exist(conn, post_id):
             logger.error(
                 'Cannot update post with id {}. Post does not exist'.format(
                     post_id
@@ -83,11 +84,10 @@ async def retrieve_post_view(request):
 
 async def retrieve_posts_view(request):
     schema = PostsPageSchema(exclude=('children', ))
-    query_params = {
-        param: request.query_params[param] for param in (
-            'topic__like', 'page_num', 'per_page'
-        )
-    }
+    query_params = {}
+    for param in ('topic__like', 'page_num', 'per_page'):
+        if param in request.query:
+            query_params[param] = request.query[param]
     async with request.app['db'].acquire() as conn:
         posts_page = await find_posts(conn, **query_params)
     response_data = schema.dump(posts_page).data

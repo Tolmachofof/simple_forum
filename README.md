@@ -1,24 +1,30 @@
-# SIMPLE FORUM - пример API простого форума.
+# Пример API простого форума.
 ### Requirements
-python >= 3.7
-### Установка зависимостей
+* Python >= 3.7
+* Docker
+
+### Запуск проекта в Docker
 ```
-pip install -r requerements.txt
+make run
 ```
-### Поднятие тестовой БД
+
+### Запуск тестов в Docker
 ```
-docker-compose -f docker-compose-testing.yaml
-alembic upgrade head
+make test
 ```
-### Локальный запуск тестов
+
+### Настройки проекта
+Базовые настройки приложения хранятся в файле /conf/conf.yaml
+
+Некоторые настройки могут быть переопределены через переменные окружения:
+* DATABASE_HOST
+* DATABASE_PORT
+* DATABASE_NAME
+* DATABASE_USER
+* DATABASE_PASSWORD
+
 ```
-python -m pytest
-```
-или
-```
-make tests
-```
-### Запуск прокта
-```
-python main.py run-app
+./conf/.test_env - Окружение для запуска тестов
+
+./cont/.dev_env - Окружение для запуска прокта
 ```

@@ -2,14 +2,20 @@ version: "3"
 
 services:
 
-  postgres-tests:
+  test-app:
+    image: simple-forum
+    command: >
+      bash -c "
+        alembic --config /opt/simple_forum/conf/alembic_test.ini upgrade head &&
+        python -m pytest -vvv
+      "
+    env_file:
+      - './conf/.test_env'
+
+  test-forum-db:
     image: postgres
-    domainname: postgres-tests
-    ports:
-      - "5432:5432"
+    container_name: test-forum-db
     volumes:
       - "./initdb.sh:/docker-entrypoint-initdb.d/initdb.sh"
-    environment:
-      FORUM_DATABASE: simple_forum
-      FORUM_USER: forum_admin
-      FORUM_PASSWORD: forum_admin
+    env_file:
+      - "./conf/.test_env"

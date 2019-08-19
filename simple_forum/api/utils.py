@@ -8,7 +8,7 @@ async def load_data(request, schema):
     try:
         request_data = await request.json()
     except JSONDecodeError:
-        raise
+        raise web.HTTPBadRequest
     try:
         return schema.load(request_data).data
     except ValidationError as exc:

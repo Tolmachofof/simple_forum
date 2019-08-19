@@ -109,9 +109,7 @@ async def find_sections(
     :param name__like: шаблон для поиска разделов по названию.
     :param page_num: номер страницы.
     :param per_page: количество элементов на странице."""
-    query = select([section]).order_by(
-        desc(section.c.created_at), desc(section.c.updated_at)
-    )
+    query = select([section])
     if name__like is not None:
         query = query.where(section.c.name.ilike(name__like))
     return await _paginate_query(
@@ -182,11 +180,9 @@ async def find_posts(
     :param topic__like: шаблон для поиска разделов по названию.
     :param page_num: номер страницы.
     :param per_page: количество элементов на странице."""
-    query = select([section]).order_by(
-        desc(section.c.created_at), desc(section.c.updated_at)
-    )
+    query = select([post])
     if topic__like is not None:
-        query = query.where(section.c.name.ilike(topic__like))
+        query = query.where(post.c.topic.ilike(topic__like))
     return await _paginate_query(
         conn, query, page_num=page_num, per_page=per_page
     )
@@ -268,13 +264,15 @@ async def get_post_comments(conn: SAConnection, post_id: int):
     )
     return await cur.fetchall()
     
-    
+
 async def _paginate_query(
     conn, query, page_num=DEFAULT_PAGE_NUM, per_page=DEFAULT_PER_PAGE
 ) -> Page:
     total = await conn.scalar(
         select([func.count('id')]).select_from(alias(query, 'query'))
     )
-    cur = await conn.execute(query.offset(page_num).limit(per_page))
+    if page_num != DEFAULT_PAGE_NUM:
+        query = query.offset(page_num)
+    cur = await conn.execute(query.limit(per_page))
     items = await cur.fetchall()
     return Page(items, page_num, per_page, total)

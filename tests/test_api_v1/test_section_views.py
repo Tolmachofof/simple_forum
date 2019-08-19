@@ -5,24 +5,15 @@ from aiohttp import web
 from aiojobs.aiohttp import setup as setup_jobs
 from sqlalchemy import and_, exists, insert, select
 
-from simple_forum.api.v1.views.sections import (
-    create_section_view, delete_section_view, retrieve_section_view,
-    update_section_view, retrieve_sections_view
-)
-from simple_forum.db.queries import DEFAULT_PER_PAGE, DEFAULT_PAGE_NUM
 from simple_forum.db.models import section
+from simple_forum.db.queries import DEFAULT_PAGE_NUM, DEFAULT_PER_PAGE
+from simple_forum.routes import SECTION_URLS
 
 
 @pytest.fixture
 def cli(loop, aiohttp_client, db_engine, cleanup_db):
     app = web.Application()
-    app.add_routes((
-        web.post(r'/api/v1/sections', create_section_view),
-        web.get(r'/api/v1/sections', retrieve_sections_view),
-        web.put(r'/api/v1/sections/{id:\d+}', update_section_view),
-        web.get(r'/api/v1/sections/{id:\d+}', retrieve_section_view),
-        web.delete(r'/api/v1/sections/{id:\d+}', delete_section_view),
-    ))
+    app.add_routes(SECTION_URLS)
     app['db'] = db_engine
     setup_jobs(app)
     return loop.run_until_complete(aiohttp_client(app))
@@ -53,7 +44,7 @@ async def test_create_section(cli):
 @pytest.mark.parametrize(
     'request_body', ({}, {'name': 'name'}, {'description': 'description'})
 )
-async def test_create_section_with_invalid_request(request_body, cli):
+async def test_create_section_with_invalid_request_data(request_body, cli):
     response = await cli.post('/api/v1/sections', json=request_body)
     assert response.status == 400
 
@@ -87,7 +78,7 @@ async def test_update_if_section_does_not_exist(cli):
     'request_data',
     ({}, {'name': 'new_name'}, {'description': 'new description'})
 )
-async def test_update_section_if_request_data_is_invalid(request_data, cli):
+async def test_update_section_with_invalid_request_data(request_data, cli):
     response = await cli.put(
         '/api/v1/sections/{}'.format(random.randint(1, 100)), json=request_data
     )
@@ -113,7 +104,7 @@ async def test_retrieve_section_if_section_does_not_exist(cli):
     assert response.status == 404
     
     
-async def retrieve_sections(cli):
+async def test_retrieve_sections(cli):
     target_sections = [
         {
             'id': _id,
@@ -144,7 +135,7 @@ async def retrieve_sections(cli):
     assert sections_page['total'] == len(target_sections)
     target_ids = sorted([_section['id'] for _section in target_sections])
     page_ids = sorted([_section['id'] for _section in sections_page['items']])
-    assert page_ids == target_ids
+    assert page_ids == target_ids[:DEFAULT_PER_PAGE]
 
 
 async def test_delete_section(cli):

@@ -1,14 +1,18 @@
-all: test
-
-.install-requirements:
-	pip install --upgrade pip
-	pip install -r ./requirements.txt
+all: run
 
 isort:
 	isort -rc simple_forum
 	isort -rc tests
 
-test: .install-requirements
+build: isort
 	mkdir -p ./report/coverage
-	mkdir -p ./report/junit
-	python -m pytest -vvv
+	docker build . --tag simple-forum
+
+# Запуск тестов
+test: build
+	docker-compose -f docker-compose-testing.yaml up \
+	    --force-recreate --abort-on-container-exit --exit-code-from test-app
+
+# Запуск приложения
+run: build
+	docker-compose -f docker-compose-dev.yaml up

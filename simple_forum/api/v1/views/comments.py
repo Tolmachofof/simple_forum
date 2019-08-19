@@ -24,15 +24,13 @@ async def create_comment_view(request: web.Request) -> web.Response:
             )
         # Если передан id родительского комментария - проверяем,
         # что он существует
-        if all((
-            comment_data['parent_id'] is not None,
-            not await is_comment_exist(conn, comment_data['parent_id'])
-        )):
-            raise web.HTTPBadRequest(
-                body='Comment with id {} does not exist'.format(
-                    comment_data['parent_id']
+        if comment_data.get('parent_id') is not None:
+            if not await is_comment_exist(conn, comment_data['parent_id']):
+                raise web.HTTPBadRequest(
+                    body='Comment with id {} does not exist'.format(
+                        comment_data['parent_id']
+                    )
                 )
-            )
         new_comment = await create_comment(
             conn, comment_data['post_id'], comment_data['text'],
             comment_data.get('parent_id')
